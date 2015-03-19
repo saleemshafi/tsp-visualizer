@@ -1,7 +1,7 @@
 Traveling Salesman Problem Visualizer
 ==============================
 
-This browser-based tool is designed to help you with the Traveling Salesman Problem in the Coursera Discrete Optimization class.
+This browser-based tool is designed to help you with the Traveling Salesman Problem in the [Coursera Discrete Optimization class](https://class.coursera.org/optimization-003).
 
 It does NOT create solutions to the problem, it simply displays your solution to you so that we can get a sense of what your algorithm is and isn't doing.
 
