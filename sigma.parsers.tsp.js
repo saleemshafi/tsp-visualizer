@@ -67,8 +67,8 @@
 		  var coords = line.split(" ");
 		  if (coords.length == 2) {
 			  g.addNode( {
-				id: "n"+index,
-				label: (index)+" ("+coords[0]+","+coords[1]+")",
+				id: "n"+(index-1), // -1 because we skip the first line
+				label: (index-1)+" ("+coords[0]+","+coords[1]+")",
 				x: coords[0],
 				y: coords[1],
 				size: 1
