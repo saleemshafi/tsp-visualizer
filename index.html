@@ -23,7 +23,7 @@
 <body>
 <div id="data">
 <div class="section">
-<h3>Nodes</h3>
+<h3>Problems</h3>
 <ul>
 <li><a href="#" onclick="loadNodes('tsp_51_1')">Problem 1</a></li>
 <li><a href="#" onclick="loadNodes('tsp_100_3')">Problem 2</a></li>
@@ -45,59 +45,49 @@
 <script src="sigma/plugins/sigma.parsers.json.min.js"></script>
 <script src="sigma.parsers.tsp.js"></script>
 <script>
-  var s = null;
-  var g = {
-		  nodes: [],
-		  edges: []
-  }
-  
-  var ePath = document.getElementById("path");
-  ePath.addEventListener("keyup", updatePath);
+	sigma.classes.graph.addMethod('edgeLength', function(e) {
+		  var sourceNode = this.nodesIndex[e.source];
+		  var targetNode = this.nodesIndex[e.target];
+		  return Math.sqrt(Math.pow(sourceNode.x - targetNode.x, 2) + Math.pow(sourceNode.y - targetNode.y, 2))
+	});
+
+  sigma.classes.graph.addMethod('cycleLength', function() {
+	  var dist = 0;
+	  this.edges().forEach(function(edge, index) {
+		 dist += this.edgeLength(edge); 
+	  }, this);
+	  return dist;
+  });
   
   function updatePath() {
-	 g.edges = sigma.parsers.tsp.edges(ePath.value);
-	 drawGraph(g);
-  }
-  
-  function drawGraph(graph) {
-		 var container = document.getElementById("container");
-		 while (container.firstChild) {
-			container.removeChild(container.firstChild);
-		 }
-		 document.getElementById("distance").textContent = cycleLength(graph);
-		 new sigma({
-			 graph: graph,
-			 container: 'container',
-			 settings: {
-				 minNodeSize: 0,
-				 maxNodeSize: 2,
-				 defaultNodeColor: '#3333FF'
-			 }
-		 });
+	 sigma.parsers.tsp.edges(ePath.value, s);
+	 s.refresh();
+	 document.getElementById("distance").textContent = s.graph.cycleLength();
   }
   
   function loadNodes(nodeFile) {
-	  sigma.parsers.tsp.fileNodes(nodeFile, g, function(g1) {
+	  sigma.parsers.tsp.fileNodes(nodeFile, s, function() {
+		  var chain = "";
+		  s.graph.nodes().forEach(function(node) {
+			  chain += node.id.substring(1)+" ";
+		  });
+		  ePath.value = chain.trim();
 		  updatePath();
 	  });
   }
   
-  function cycleLength(graph) {
-	  var nodeMap = {}
-	  graph.nodes.forEach(function(n) {
-		 nodeMap[n.id] = n; 
-	  });
-	  var dist = 0;
-	  graph.edges.forEach(function(e) {
-		 dist += edgeLength(nodeMap[e.source], nodeMap[e.target]); 
-	  });
-	  return dist;
-  }
+  var s = new sigma('container');
+  s.settings({
+				 minNodeSize: 0,
+				 maxNodeSize: 1,
+				 defaultNodeColor: '#0000FF',
+				 defaultEdgeColor: '#DFDFDF',
+				 edgeColor: 'default'
+			 });
   
-  function edgeLength(a, b) {
-	  return Math.sqrt(Math.pow(a.x - b.x, 2) + Math.pow(a.y - b.y, 2))
-  }
-  
+  var ePath = document.getElementById("path");
+  ePath.addEventListener("keyup", updatePath);
+
   loadNodes('tsp_51_1');
   
 </script>

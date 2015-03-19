@@ -8,6 +8,15 @@
   sigma.utils.pkg('sigma.parsers');
   sigma.utils.pkg('sigma.utils');
 
+  
+  sigma.classes.graph.addMethod('clearEdges', function() {
+	  this.edges().forEach(function(edge) {
+		 this.dropEdge(edge.id); 
+	  }, this);
+	  
+	  return this;
+  });
+  
   sigma.parsers.tsp = {
 	fileNodes: parseNodesFromFile,
 	nodes: parseNodes,
@@ -35,63 +44,55 @@
     xhr.send();
   }
   
-  function parseNodesFromFile(url, graph, callback) {
+  function parseNodesFromFile(url, sigma, callback) {
 	  parseFromFile(url, function(data) {
-    	  graph.nodes = parseNodes(data);
-    	  return graph;
+    	  parseNodes(data, sigma);
+    	  return sigma;
 	  }, callback)
   }
 
-  function parseEdgesFromFile(url, graph, callback) {
+  function parseEdgesFromFile(url, sigma, callback) {
 	  parseFromFile(url, function(data) {
-    	  graph.edges = parseEdges(data);
-    	  return graph;
+    	  parseEdges(data, sigma);
+    	  return sigma;
 	  }, callback)
   }
   
   
-  function parseNodes(data) {
-	  var nodes = [];
+  function parseNodes(data, sigma) {
+	  var g = sigma.graph;
+	  g.clear();
 	  var lines = data.split("\n")
-	  lines.forEach(function(line) {
+	  lines.forEach(function(line, index) {
 		  var coords = line.split(" ");
 		  if (coords.length == 2) {
-			  var newNode = {
-				id: "n"+nodes.length,
-				label: (nodes.length)+" ("+coords[0]+","+coords[1]+")",
+			  g.addNode( {
+				id: "n"+index,
+				label: (index)+" ("+coords[0]+","+coords[1]+")",
 				x: coords[0],
 				y: coords[1],
 				size: 1
-			  };
-			  nodes.push(newNode);
+			  });
 		  }
 	  });
-	  return nodes;
   }
   
-  function parseEdges(data) {
-	  var edges = [];
+  function parseEdges(data, sigma) {
+	  var g = sigma.graph;
+	  g.clearEdges();
+	  
 	  var nodeNumbers = data.split(" ");
+	  // filter out the double-spaces
 	  nodeNumbers = nodeNumbers.filter(function(elem) {
 		  return elem.length > 0;
 	  });
-	  for (var i = 0; i < nodeNumbers.length - 1; i++) {
-		  edges.push({
-			  id: "e"+edges.length,
-			  source: "n"+nodeNumbers[i],
-			  target: "n"+nodeNumbers[i+1],
-			  color: '#CCCCCC'
+	  nodeNumbers.forEach(function(nodeNum, index) {
+		  g.addEdge({
+			  id: "e"+index,
+			  source: "n"+nodeNumbers[index],
+			  target: "n"+nodeNumbers[index < nodeNumbers.length - 1 ? index+1 : 0],
 		  });
-	  }
-	  if (nodeNumbers.length > 1) {
-		  edges.push({
-			  id: "e"+edges.length,
-			  source: "n"+nodeNumbers[nodeNumbers.length-1],
-			  target: "n"+nodeNumbers[0],
-			  color: '#CCCCCC'
-		  });
-	  }
-	  return edges;
-  }
+	  });
+  	}
   
 }).call(this);
